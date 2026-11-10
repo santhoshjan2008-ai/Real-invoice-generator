@@ -1,0 +1,6 @@
+:root {
+  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.08);
+  --shadow-card-hover: 0 8px 30px rgba(0, 0, 0, 0.12);
+  --gradient-revenue: linear-gradient(135deg, #d4f5d4 0%, #e8fae8 50%, #f0fdf0 100%);
+  --transition-default: all 0.2s ease;
+}
