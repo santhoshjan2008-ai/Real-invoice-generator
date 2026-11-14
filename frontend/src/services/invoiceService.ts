@@ -164,6 +164,8 @@ function saveLocalInvoices(invoices: Invoice[], userId?: string): void {
 export function mapFromDb(record: any): Invoice {
   return {
     id: record.id,
+    userId: record.user_id,
+    businessId: record.business_id || undefined,
     invoiceNumber: record.invoice_number,
     status: record.status || 'draft',
     issueDate: record.issue_date,
@@ -212,6 +214,7 @@ export function mapToDb(invoice: InvoiceFormData | Invoice, userId: string): Rec
   return {
     id: invoice.id || `inv-${Date.now()}`,
     user_id: userId,
+    business_id: invoice.businessId || null,
     invoice_number: invoice.invoiceNumber.startsWith('#')
       ? invoice.invoiceNumber
       : `#${invoice.invoiceNumber}`,

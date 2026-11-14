@@ -35,8 +35,7 @@ export function dataUrlToBlob(dataUrl: string): { blob: Blob; mimeType: string }
 export async function uploadLogo(
   userId: string,
   invoiceId: string,
-  fileOrUrl: File | Blob | string,
-  fileName: string = 'logo'
+  fileOrUrl: File | Blob | string
 ): Promise<StorageUploadResult> {
   try {
     // If it's already an https Supabase or remote URL, no need to re-upload
@@ -104,6 +103,17 @@ export async function uploadLogo(
     console.error('[StorageService] Unexpected error uploading logo:', error);
     return { url: null, path: null, error };
   }
+}
+
+/**
+ * Upload business logo for a business profile
+ */
+export async function uploadBusinessLogo(
+  userId: string,
+  businessId: string,
+  fileOrUrl: File | Blob | string
+): Promise<StorageUploadResult> {
+  return uploadLogo(userId, businessId, fileOrUrl);
 }
 
 /**
