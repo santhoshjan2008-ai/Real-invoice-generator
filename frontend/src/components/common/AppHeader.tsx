@@ -1,5 +1,6 @@
-import { Bell, Plus, Home, FileText, User, LogOut } from 'lucide-react';
+import { Bell, Plus, Home, FileText, User, LogOut, Building2 } from 'lucide-react';
 import type { NavTab } from './BottomNav';
+import BusinessSwitcher from '../business/BusinessSwitcher';
 
 interface AppHeaderProps {
   userName?: string;
@@ -10,6 +11,8 @@ interface AppHeaderProps {
   onCreateInvoice?: () => void;
   onSignOut?: () => void;
   onNotificationClick?: () => void;
+  onAddNewBusiness?: () => void;
+  onManageBusinesses?: () => void;
 }
 
 export default function AppHeader({
@@ -21,11 +24,21 @@ export default function AppHeader({
   onCreateInvoice,
   onSignOut,
   onNotificationClick,
+  onAddNewBusiness,
+  onManageBusinesses,
 }: AppHeaderProps) {
+  const handleManage = () => {
+    if (onManageBusinesses) {
+      onManageBusinesses();
+    } else if (onTabChange) {
+      onTabChange('businesses');
+    }
+  };
+
   return (
-    <header className="w-full flex items-center justify-between pt-2 pb-6 px-1">
-      {/* User Greeting & Avatar */}
-      <div className="flex items-center gap-3">
+    <header className="w-full flex items-center justify-between pt-2 pb-6 px-1 flex-wrap gap-y-3">
+      {/* Left: User Greeting & Avatar */}
+      <div className="flex items-center gap-3" title={userEmail ? `${userName} (${userEmail})` : userName}>
         <div className="relative">
           <img
             src={userAvatar}
@@ -38,19 +51,27 @@ export default function AppHeader({
           <span className="text-[11px] sm:text-xs text-slate-500 font-medium tracking-tight">
             Good Morning
           </span>
-          <span className="text-sm sm:text-base font-bold text-slate-900 tracking-tight truncate max-w-[160px] sm:max-w-xs">
+          <span className="text-sm sm:text-base font-bold text-slate-900 tracking-tight truncate max-w-[140px] sm:max-w-xs">
             {userName}
           </span>
         </div>
       </div>
 
+      {/* Center: Global Active Business Selector */}
+      <div className="order-3 sm:order-2 w-full sm:w-auto flex justify-start sm:justify-center">
+        <BusinessSwitcher
+          onAddNewBusiness={onAddNewBusiness || handleManage}
+          onManageBusinesses={handleManage}
+        />
+      </div>
+
       {/* Desktop Navigation Bar (Visible on md+ screens) */}
       {onTabChange && (
-        <nav className="hidden md:flex items-center gap-1.5 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full border border-slate-200/90 shadow-sm">
+        <nav className="order-2 sm:order-3 hidden md:flex items-center gap-1 bg-white/90 backdrop-blur-md px-2.5 py-1.5 rounded-full border border-slate-200/90 shadow-sm">
           <button
             type="button"
             onClick={() => onTabChange('home')}
-            className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
               activeTab === 'home'
                 ? 'bg-[#86efac]/80 text-slate-900 shadow-sm'
                 : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
@@ -63,20 +84,33 @@ export default function AppHeader({
           <button
             type="button"
             onClick={() => onTabChange('invoices')}
-            className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
               activeTab === 'invoices'
                 ? 'bg-[#86efac]/80 text-slate-900 shadow-sm'
                 : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
             }`}
           >
             <FileText className="w-3.5 h-3.5" />
-            <span>All Invoices</span>
+            <span>Invoices</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onTabChange('businesses')}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+              activeTab === 'businesses'
+                ? 'bg-[#86efac]/80 text-slate-900 shadow-sm'
+                : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
+            }`}
+          >
+            <Building2 className="w-3.5 h-3.5" />
+            <span>Businesses</span>
           </button>
 
           <button
             type="button"
             onClick={() => onTabChange('profile')}
-            className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
               activeTab === 'profile'
                 ? 'bg-[#86efac]/80 text-slate-900 shadow-sm'
                 : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
@@ -89,7 +123,7 @@ export default function AppHeader({
       )}
 
       {/* Right Side: Quick Action, Notification Bell & Sign Out */}
-      <div className="flex items-center gap-2 sm:gap-2.5">
+      <div className="order-2 sm:order-4 flex items-center gap-2 sm:gap-2.5">
         {onCreateInvoice && (
           <button
             type="button"

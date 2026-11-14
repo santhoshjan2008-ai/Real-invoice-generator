@@ -13,12 +13,13 @@ import {
   createInvoice as createInvoiceService,
   updateInvoice as updateInvoiceService,
   deleteInvoice as deleteInvoiceService,
-  getInvoiceById as getInvoiceByIdService,
 } from '../services/invoiceService';
 import { useAuth } from './AuthContext';
+import { useBusiness } from './BusinessContext';
 
 interface InvoiceContextType {
   invoices: Invoice[];
+  businessInvoices: Invoice[];
   isLoading: boolean;
   isSaving: boolean;
   error: string | null;
@@ -36,6 +37,7 @@ const InvoiceContext = createContext<InvoiceContextType | undefined>(undefined);
 
 export function InvoiceProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
+  const { activeBusiness } = useBusiness();
   const userId = user?.id;
 
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -66,7 +68,11 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
       setIsSaving(true);
       setError(null);
       try {
-        const newInvoice = await createInvoiceService(data, userId);
+        const payload: InvoiceFormData = {
+          ...data,
+          businessId: data.businessId || activeBusiness?.id,
+        };
+        const newInvoice = await createInvoiceService(payload, userId);
         setInvoices((prev) => [newInvoice, ...prev.filter((i) => i.id !== newInvoice.id)]);
         return newInvoice;
       } catch (err) {
@@ -77,7 +83,7 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
         setIsSaving(false);
       }
     },
-    [userId]
+    [userId, activeBusiness]
   );
 
   const updateInvoice = useCallback(
@@ -127,34 +133,43 @@ export function InvoiceProvider({ children }: { children: ReactNode }) {
     [invoices]
   );
 
+  // Invoices filtered by active business (legacy invoices without businessId are preserved if activeBusiness is default or if no business assigned)
+  const businessInvoices = useMemo(() => {
+    if (!activeBusiness) return invoices;
+    return invoices.filter(
+      (inv) => inv.businessId === activeBusiness.id || (!inv.businessId && activeBusiness.isDefault)
+    );
+  }, [invoices, activeBusiness]);
+
   const totalRevenue = useMemo(
     () =>
-      invoices
+      businessInvoices
         .filter((inv) => inv.status === 'paid')
         .reduce((sum, inv) => sum + inv.grandTotal, 0),
-    [invoices]
+    [businessInvoices]
   );
 
   const outstandingAmount = useMemo(
     () =>
-      invoices
+      businessInvoices
         .filter((inv) => inv.status === 'pending' || inv.status === 'overdue' || inv.status === 'sent')
         .reduce((sum, inv) => sum + inv.grandTotal, 0),
-    [invoices]
+    [businessInvoices]
   );
 
   const outstandingCount = useMemo(
     () =>
-      invoices.filter(
+      businessInvoices.filter(
         (inv) => inv.status === 'pending' || inv.status === 'overdue' || inv.status === 'sent'
       ).length,
-    [invoices]
+    [businessInvoices]
   );
 
   return (
     <InvoiceContext.Provider
       value={{
         invoices,
+        businessInvoices,
         isLoading,
         isSaving,
         error,

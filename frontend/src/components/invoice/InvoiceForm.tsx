@@ -7,15 +7,15 @@ import {
   Building,
   User,
   CreditCard,
-  FileText,
-  DollarSign,
   Percent,
   Loader2,
   X,
+  Sparkles,
 } from 'lucide-react';
 import type { InvoiceFormData, LineItem } from '../../types';
 import { uploadLogo } from '../../services/storageService';
 import { useAuth } from '../../context/AuthContext';
+import { useBusiness } from '../../context/BusinessContext';
 
 interface InvoiceFormProps {
   formData: InvoiceFormData;
@@ -31,6 +31,7 @@ export default function InvoiceForm({
   onCancel,
 }: InvoiceFormProps) {
   const { user } = useAuth();
+  const { activeBusiness } = useBusiness();
   const [activeSection, setActiveSection] = useState<'details' | 'items' | 'payment'>('details');
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
 
@@ -280,6 +281,20 @@ export default function InvoiceForm({
                 </label>
               </div>
 
+              {activeBusiness && (
+                <div className="flex items-center justify-between px-3 py-1.5 rounded-xl bg-emerald-50/80 border border-emerald-200/60 text-xs text-emerald-900">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <Sparkles className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
+                    <span className="truncate font-semibold">
+                      Profile: {activeBusiness.businessName}
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-white px-2 py-0.5 rounded-full border border-emerald-200/50 flex-shrink-0">
+                    Auto-Filled
+                  </span>
+                </div>
+              )}
+
               {formData.businessDetails.logo && (
                 <div className="flex items-center justify-between bg-white p-2.5 rounded-xl border border-slate-200">
                   <div className="flex items-center gap-3">
@@ -439,7 +454,7 @@ export default function InvoiceForm({
           </div>
 
           <div className="flex flex-col gap-3">
-            {formData.lineItems.map((item, idx) => (
+            {formData.lineItems.map((item) => (
               <div
                 key={item.id}
                 className="bg-slate-50/80 p-4 rounded-2xl border border-slate-200/80 grid grid-cols-12 gap-3 items-center"

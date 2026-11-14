@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
-  User,
   Building,
   Mail,
   Phone,
@@ -16,13 +15,16 @@ import {
 } from 'lucide-react';
 import { checkSupabaseConnection } from '../services/supabaseClient';
 import { useAuth } from '../context/AuthContext';
+import { useBusiness } from '../context/BusinessContext';
 
 interface ProfileProps {
   onBack: () => void;
+  onManageBusinesses?: () => void;
 }
 
-export default function Profile({ onBack }: ProfileProps) {
+export default function Profile({ onBack, onManageBusinesses }: ProfileProps) {
   const { user, profile, signOut } = useAuth();
+  const { activeBusiness, businesses } = useBusiness();
   const [supabaseStatus, setSupabaseStatus] = useState<{
     loading: boolean;
     connected: boolean;
@@ -147,19 +149,34 @@ export default function Profile({ onBack }: ProfileProps) {
             </div>
           </div>
 
-          <div className="bg-slate-50/80 p-3.5 rounded-2xl border border-slate-100 flex items-center gap-3">
-            <Building className="w-4 h-4 text-emerald-600 shrink-0" />
-            <div className="flex flex-col">
-              <span className="text-[11px] text-slate-400 font-medium">Company</span>
-              <span className="text-xs font-semibold text-slate-800">De Silva &amp; Co. LLC</span>
+          <div className="bg-slate-50/80 p-3.5 rounded-2xl border border-slate-100 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <Building className="w-4 h-4 text-emerald-600 shrink-0" />
+              <div className="flex flex-col min-w-0">
+                <span className="text-[11px] text-slate-400 font-medium">Active Business</span>
+                <span className="text-xs font-semibold text-slate-800 truncate">
+                  {activeBusiness?.businessName || 'No business selected'}
+                </span>
+              </div>
             </div>
+            {onManageBusinesses && (
+              <button
+                type="button"
+                onClick={onManageBusinesses}
+                className="px-2.5 py-1 rounded-xl bg-white border border-slate-200 text-[11px] font-semibold text-emerald-700 hover:bg-emerald-50 shrink-0 cursor-pointer shadow-sm"
+              >
+                Manage ({businesses.length})
+              </button>
+            )}
           </div>
 
           <div className="bg-slate-50/80 p-3.5 rounded-2xl border border-slate-100 flex items-center gap-3">
             <Phone className="w-4 h-4 text-emerald-600 shrink-0" />
             <div className="flex flex-col">
               <span className="text-[11px] text-slate-400 font-medium">Phone</span>
-              <span className="text-xs font-semibold text-slate-800">+1 (555) 234-5678</span>
+              <span className="text-xs font-semibold text-slate-800">
+                {activeBusiness?.phone || '+1 (555) 234-5678'}
+              </span>
             </div>
           </div>
 
@@ -167,7 +184,9 @@ export default function Profile({ onBack }: ProfileProps) {
             <MapPin className="w-4 h-4 text-emerald-600 shrink-0" />
             <div className="flex flex-col">
               <span className="text-[11px] text-slate-400 font-medium">Office Address</span>
-              <span className="text-xs font-semibold text-slate-800">123 Business Blvd, Suite 400, San Francisco, CA</span>
+              <span className="text-xs font-semibold text-slate-800">
+                {activeBusiness?.streetAddress || activeBusiness?.city || 'Not specified'}
+              </span>
             </div>
           </div>
 

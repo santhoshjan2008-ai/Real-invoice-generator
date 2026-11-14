@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Plus, Filter, ArrowLeft, X } from 'lucide-react';
+import { Search, Plus, ArrowLeft, X, Building2 } from 'lucide-react';
 import InvoiceCard from '../components/invoice/InvoiceCard';
 import InvoicePreview from '../components/invoice/InvoicePreview';
 import { useInvoices } from '../context/InvoiceContext';
+import { useBusiness } from '../context/BusinessContext';
 import type { Invoice, InvoiceStatus } from '../types';
 
 interface InvoicesPageProps {
@@ -12,12 +13,16 @@ interface InvoicesPageProps {
 }
 
 export default function InvoicesPage({ onBack, onCreateInvoice }: InvoicesPageProps) {
-  const { invoices } = useInvoices();
+  const { invoices, businessInvoices } = useInvoices();
+  const { activeBusiness } = useBusiness();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<InvoiceStatus | 'all'>('all');
+  const [filterByActiveBiz, setFilterByActiveBiz] = useState(true);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
 
-  const filteredInvoices = invoices.filter((inv) => {
+  const baseInvoices = filterByActiveBiz && activeBusiness ? businessInvoices : invoices;
+
+  const filteredInvoices = baseInvoices.filter((inv) => {
     const matchesSearch =
       inv.invoiceNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
       inv.clientDetails.name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -48,9 +53,39 @@ export default function InvoicesPage({ onBack, onCreateInvoice }: InvoicesPagePr
         </button>
       </div>
 
-      <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">All Invoices</h1>
-        <p className="text-xs text-slate-500">Track and manage every billing document</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">All Invoices</h1>
+          <p className="text-xs text-slate-500">Track and manage every billing document</p>
+        </div>
+
+        {activeBusiness && (
+          <div className="flex items-center gap-1.5 bg-white p-1 rounded-2xl border border-slate-200 shadow-sm self-start sm:self-auto text-xs font-semibold">
+            <button
+              type="button"
+              onClick={() => setFilterByActiveBiz(true)}
+              className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 ${
+                filterByActiveBiz
+                  ? 'bg-slate-900 text-white shadow-sm'
+                  : 'text-slate-500 hover:text-slate-900'
+              }`}
+            >
+              <Building2 className="w-3.5 h-3.5" />
+              <span>{activeBusiness.businessName}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setFilterByActiveBiz(false)}
+              className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
+                !filterByActiveBiz
+                  ? 'bg-slate-900 text-white shadow-sm'
+                  : 'text-slate-500 hover:text-slate-900'
+              }`}
+            >
+              All Businesses ({invoices.length})
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Search & Filter Bar */}

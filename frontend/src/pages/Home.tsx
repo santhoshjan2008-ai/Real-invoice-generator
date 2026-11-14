@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, TrendingUp, AlertCircle, CheckCircle2, ArrowRight } from 'lucide-react';
+import { X, TrendingUp, AlertCircle, ArrowRight } from 'lucide-react';
 import AppHeader from '../components/common/AppHeader';
 import RevenueCard from '../components/invoice/RevenueCard';
 import InvoiceCard from '../components/invoice/InvoiceCard';
@@ -18,7 +18,7 @@ interface HomeProps {
 }
 
 export default function Home({ onCreateInvoice, onViewAllInvoices, onTabChange }: HomeProps) {
-  const { invoices, totalRevenue, outstandingAmount, outstandingCount } = useInvoices();
+  const { invoices, businessInvoices, totalRevenue, outstandingAmount, outstandingCount } = useInvoices();
   const { user, profile, signOut } = useAuth();
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
 
@@ -35,10 +35,11 @@ export default function Home({ onCreateInvoice, onViewAllInvoices, onTabChange }
     user?.user_metadata?.picture ||
     'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80';
 
-  // Take recent invoices for display
-  const recentInvoices = invoices.slice(0, 6);
-  const paidCount = invoices.filter((i) => i.status === 'paid').length;
-  const totalCount = invoices.length || 1;
+  // Take recent invoices for currently active business
+  const displayInvoices = businessInvoices && businessInvoices.length > 0 ? businessInvoices : invoices;
+  const recentInvoices = displayInvoices.slice(0, 6);
+  const paidCount = displayInvoices.filter((i) => i.status === 'paid').length;
+  const totalCount = displayInvoices.length || 1;
   const collectionRate = Math.round((paidCount / totalCount) * 100);
 
   return (
@@ -52,6 +53,7 @@ export default function Home({ onCreateInvoice, onViewAllInvoices, onTabChange }
         onTabChange={onTabChange}
         onCreateInvoice={onCreateInvoice}
         onSignOut={signOut}
+        onManageBusinesses={() => onTabChange && onTabChange('businesses')}
       />
 
       {/* Main Responsive Dashboard Container */}
