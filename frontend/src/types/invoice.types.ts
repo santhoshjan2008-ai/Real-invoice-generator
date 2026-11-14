@@ -30,6 +30,8 @@ export interface ClientDetails {
 
 export interface Invoice {
   id: string;
+  userId?: string;
+  businessId?: string;
   invoiceNumber: string;
   status: InvoiceStatus;
   issueDate: string;
